@@ -1,46 +1,72 @@
-# yt-dlp 简易视频下载器
+# yt-dlp-bat
 
-[English](README.en.md)
+[简体中文](README.zh-CN.md) | English
 
-一个方便日常使用的 Windows 视频下载小工具，基于 yt-dlp 开发，支持自动下载 yt-dlp 并循环下载视频。
+A single Windows batch file for downloading videos with yt-dlp. Double-click it, paste a link, get the video in `source\`.
 
----
+The script downloads `yt-dlp.exe` on first run, creates a `source` folder, and keeps prompting for links until you quit.
 
-## 功能特点
+## Why this exists
 
-- 双击即可运行，无需安装
-- 第一次运行会自动下载最新版 `yt-dlp.exe`
-- 支持循环输入链接持续下载
-- 适合单次下载长视频
-- 自动将视频保存到 `source` 文件夹
+yt-dlp handles the download. Remembering the flags is the annoying part. This wrapper fixes the options most people need (best video and audio, MP4 merge, 16 parallel fragments, retries) and turns the job into a double-clickable `.bat` file for occasional long videos.
 
----
+## Quick start
 
-## 使用方法
+Requirements:
 
-1. 下载 `video_download.bat` 文件
-2. 双击运行
-3. 第一次运行会自动下载 `yt-dlp.exe`（约 17MB）
-4. 粘贴视频链接后按回车开始下载
-5. 下载完成后会自动回到输入界面，可继续粘贴下一个链接
-6. 直接按回车或输入 `q` 退出程序
+- Windows with PowerShell (included with Windows, used for the first-run download)
+- ffmpeg on PATH if you want separate video and audio streams merged into MP4
 
----
+Download [video_download.bat](video_download.bat) and double-click it. On first run it fetches the latest `yt-dlp.exe` (about 17 MB) into the same folder.
 
-## 重要提醒
+The prompt is in Chinese:
 
-- **本工具仅供个人学习和合法使用**，请严格遵守你所在地区的法律法规。
-- **请尊重版权**，不要下载、传播受版权保护的内容。
-- 本程序会**自动下载并调用** [yt-dlp](https://github.com/yt-dlp/yt-dlp) 进行视频下载。
-- 该工具**适合单次下载长视频**，不适合高频批量下载场景。
-- yt-dlp 会定期更新，建议偶尔手动更新 `yt-dlp.exe` 以获得更好支持。
+```
+请输入视频链接（直接回车或输入 q 退出）：
+```
 
----
+Paste a URL and press Enter. When the download finishes, the prompt returns. Press Enter, or type `q` or `exit`, to quit. Files go to `source\`.
 
-## 免责声明
+## What it does
 
-本工具仅作为技术学习与个人便利用途提供。作者不对因使用本工具而产生的任何法律责任承担责任。请确保你的下载行为符合当地法律法规。
+| Stage | Behavior |
+|---|---|
+| First run | Downloads `yt-dlp.exe` from the latest GitHub release if the file is missing |
+| Each URL | Runs yt-dlp with the fixed flags below |
+| Output | Writes to `source\<title> [<id>].<ext>` |
+| Loop | Returns to the prompt; empty input, `q`, or `exit` quits |
 
-## 许可
+## yt-dlp flags
 
-MIT，见 [LICENSE](LICENSE)。
+| Flag | Value | Effect |
+|---|---|---|
+| `-f` | `bestvideo+bestaudio/best` | Best video plus best audio; falls back to the best single file |
+| `--merge-output-format` | `mp4` | Merges the streams into MP4 |
+| `--concurrent-fragments` | `16` | Downloads up to 16 fragments in parallel |
+| `--retries` | `10` | Retries failed requests |
+| `--fragment-retries` | `10` | Retries failed fragments |
+| `-o` | `source\<title> [<id>].<ext>` | Output folder and filename |
+
+Edit these lines in `video_download.bat` to change quality, concurrency, or naming.
+
+## Known limits
+
+- Windows only. The prompt and status messages are in Chinese.
+- No quality selector. yt-dlp takes the best available streams.
+- The script downloads `yt-dlp.exe` only. Install ffmpeg separately for MP4 merging.
+- `yt-dlp.exe` is fetched only when missing. Delete it to pull a newer release.
+- No cookies, login, proxy, or subtitle options. Private or age-restricted videos may fail until you add those flags.
+- One URL per prompt. It loops, but it is not a queue or batch scheduler.
+- Download only content you have the right to keep. The script does not bypass DRM or access controls.
+
+## Files
+
+| Path | Purpose |
+|---|---|
+| `video_download.bat` | The whole tool |
+| `source/` | Created at runtime, holds downloaded videos (gitignored) |
+| `yt-dlp.exe` | Downloaded at runtime (gitignored) |
+
+## License
+
+MIT. See [LICENSE](LICENSE). Built by [yanyintingyou](https://github.com/yanyintingyou).
